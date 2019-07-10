@@ -1,0 +1,92 @@
+---
+- name: Scenario 1
+  hosts: cloud_apic
+  connection: local
+  gather_facts: no
+
+#vlan pool with vlans 50-100
+#create a phys domain
+#associate domain to pool
+#create an AEP
+#associate AEP to phys domain
+
+  tasks:
+    - name: Create VLAN Pool 
+      aci_vlan_pool:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        pool: my_pool
+        pool_allocation_mode: static
+        state: present
+      register: print_output
+    - debug: var=print_output
+
+    - name: Add VLANs to the pool
+      aci_encap_pool_range:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        pool: my_pool
+        pool_type: vlan
+        pool_allocation_mode: static
+        range_name: my_pool
+        range_start: 50
+        range_end: 100
+        allocation_mode: inherit
+        state: present
+      register: print_output
+    - debug: var=print_output
+
+    - name: Create Physical domain
+      aci_domain:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        domain: my_domphys
+        domain_type: phys
+        state: present
+      register: print_output
+    - debug: var=print_output
+
+    - name: Associate domain to pool
+      aci_domain_to_vlan_pool:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        domain: my_domphys
+        domain_type: phys
+        pool: my_pool
+        pool_allocation_mode: static
+        state: present
+      register: print_output
+    - debug: var=print_output
+
+    - name: Create an AEP
+      aci_aep:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        aep: my_aep
+        description: default
+        state: present
+      register: print_output
+    - debug: var=print_output
+
+    - name: Associate AEP to phys domain
+      aci_aep_to_domain: &binding_present
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        aep: my_aep
+        domain: my_domphys
+        domain_type: phys
+        state: present
+      register: print_output
+    - debug: var=print_output
