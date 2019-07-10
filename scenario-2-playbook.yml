@@ -1,0 +1,5 @@
+#Integrate a bare metal server into aci
+#configure vpc with lacp-active
+#10G
+#configured on leaf 2101 and 2102
+#configured on ports 20 and 21
