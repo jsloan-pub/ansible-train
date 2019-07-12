@@ -1,0 +1,265 @@
+---
+#master-playbook.yml
+- name: Master Playbook
+  hosts: cloud_apic
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Import info from yml file
+      include_vars:
+        file: master-info.yml
+        name: this
+
+    - name: Create VLAN Pool 
+      aci_vlan_pool:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        pool: "{{ item.vlan_pool }}"
+        pool_allocation_mode: "{{ item.vlan_pool_allocation_mode }}"
+        state: present
+      with_items: "{{ this.VLANs }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Add VLANs to the pool
+      aci_encap_pool_range:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        pool: "{{ item.vlan_pool }}"
+        pool_type: "{{ item.vlan_pool_type }}"
+        pool_allocation_mode: "{{ item.vlan_pool_allocation_mode }}"
+        range_name: "{{ item.vlan_pool }}"
+        range_start: "{{ item.vlan_pool_range_start }}"
+        range_end: "{{ item.vlan_pool_range_end }}"
+        allocation_mode: "{{ item.vlan_allocation_mode }}"
+        state: present
+      with_items: "{{ this.VLANs }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Create Physical domain
+      aci_domain:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        domain: "{{ item.domain }}"
+        domain_type: "{{ item.domain_type }}"
+        state: present
+      with_items: "{{ this.Domains }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Associate domain to pool
+      aci_domain_to_vlan_pool:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        domain: "{{ item.0.domain }}"
+        domain_type: "{{ item.0.domain_type }}"
+        pool: "{{ item.1.vlan_pool }}"
+        pool_allocation_mode: "{{ item.1.vlan_pool_allocation_mode }}"
+        state: present
+      with_nested:
+      - "{{ this.Domains }}"
+      - "{{ this.VLANs }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Create an AEP
+      aci_aep:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        aep: "{{ item.aep }}"
+        description: "{{ item.aep_desc }}"
+        state: present
+      with_items: "{{ this.AEPs }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Associate AEP to phys domain
+      aci_aep_to_domain: &binding_present
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        aep: "{{ item.0.aep }}"
+        domain: "{{ item.1.domain }}"
+        domain_type: "{{ item.1.domain_type }}"
+        state: present
+      with_nested:
+      - "{{ this.AEPs }}"
+      - "{{ this.Domains }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Create Interface Profiles
+      aci_interface_policy_leaf_profile:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        leaf_interface_profile: "{{ item.int_prof }}"
+      with_items: "{{ this.IDs }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Create Switch Profiles
+      aci_switch_policy_leaf_profile:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        leaf_profile: "{{ item.leaf_prof }}"
+      with_items: "{{ this.IDs }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Create Leaf Selector
+      aci_switch_leaf_selector:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        leaf_profile: "{{ item.leaf_prof }}"
+        leaf: "{{ item.leaf }}"
+        leaf_node_blk: "{{ item.sel_block_name }}"
+        from: "{{ item.sel_from }}"
+        to: "{{ item.sel_to }}"
+      with_items: "{{ this.IDs }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Associate interface and switch
+      aci_interface_selector_to_switch_policy_leaf_profile:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        leaf_profile: "{{ item.leaf_prof }}"
+        interface_selector: "{{ item.leaf_sel }}"
+      with_items: "{{ this.IDs }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Run REST calls to require policies
+      aci_rest:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        path: api/mo/uni.json
+        method: "{{ item.method }}"
+        content: "{{ item.content }}"
+      with_items: "{{ this.REST_CALLS }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Port Config
+      aci_access_port_to_interface_policy_leaf_profile:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        interface_type: vpc
+        leaf_interface_profile: "{{ item.0.int_prof }}"
+        leaf_port_blk: "{{ item.0.int_prof }}"
+        access_port_selector: "{{ item.1.access_port_sel }}"
+        from_port: "{{ item.1.from }}"
+        to_port: "{{ item.1.to }}"
+      with_subelements:
+      - "{{ this.IDs }}"
+      - access_port_sels
+      register: print_output
+    - debug: var=print_output
+
+    - name: Filters
+      aci_filter:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        tenant: "{{ item.tenant }}"
+        filter: "{{ item.filter_name }}"
+        description: "{{ item.filter_desc }}"
+      with_items: "{{ this.Filters }}"
+
+    - name: Filter Entries
+      aci_filter_entry:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        filter: "{{ item.0.filter_name }}"
+        tenant: "{{ item.0.tenant }}"
+        description: "{{ item.1.entry_desc }}"
+        dst_port: "{{ item.1.dst_port }}"
+        # dst_port_end: "{{ item.1.dst_port_end }}"
+        # dst_port_start: "{{ item.1.dst_port_start }}"
+        entry: "{{ item.1.entry_name }}"
+        ether_type: "{{ item.1.ether_type }}"
+        ip_protocol: "{{ item.1.ip_protocol }}"
+      with_subelements:
+        - "{{this.Filters}}"
+        - entries
+
+    - name: Contracts
+      aci_contract:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        tenant: "{{ item.tenant }}"
+        name: "{{ item.contract_name }}"
+        description: "{{ item.contract_desc }}"
+        scope: "{{ item.scope }}"
+      with_items: "{{ this.Contracts }}"
+
+    - name: Contract Subjects
+      aci_contract_subject:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        tenant: "{{ item.0.tenant }}"
+        contract: "{{ item.0.contract_name }}"
+        subject: "{{ item.1.contract_subject }}"
+        description: "{{ item.1.contract_subject_desc }}"
+        # consumer_match: "{{ item.1.consumer_match }}"
+        # provider_match: "{{ item.1.provider_match }}"
+      with_subelements:
+        - "{{ this.Contracts }}"
+        - subjects
+
+    - name: EPG to Contracts
+      aci_epg_to_contract:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        tenant: "{{ item.0.tenant }}"
+        ap: "{{ item.1.app_profile }}"
+        contract: "{{ item.1.contract }}"
+        contract_type: "{{ item.1.contract_type }}"
+        epg: "{{ item.1.epg}}"
+      with_subelements: 
+        - "{{ this.Contracts }}"
+        - bindings
