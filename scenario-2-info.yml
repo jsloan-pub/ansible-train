@@ -1,0 +1,108 @@
+---
+IDs:
+  - id: 0
+    leaf: leaf_10G_2101
+    int_prof: leaf_10G_2101_intprof
+    leaf_prof: leaf_10G_2101_leafprof
+    leaf_sel: leaf_10G_2101_eth1
+    sel_block_name: 2101
+    sel_from: 2101
+    sel_to: 2101
+    access_port_sels:
+      - access_port_sel: eth1_to_svr
+        from: 20
+        to: 20
+      - access_port_sel: eth2_to_svr
+        from: 21
+        to: 21
+      
+  - id: 1
+    leaf: leaf_10G_2101
+    int_prof: leaf_10G_2102_intprof
+    leaf_prof: leaf_10G_2102_leafprof
+    leaf_sel: leaf_10G_2102_eth1
+    sel_block_name: 2102
+    sel_from: 2102
+    sel_to: 2102
+    access_port_sels:
+      - access_port_sel: eth1_to_svr
+        from: 20
+        to: 20
+      - access_port_sel: eth2_to_svr
+        from: 21
+        to: 21
+
+REST_CALLS:
+  - id: 0
+    name: REST-POST Require 10G Link Level Policy
+    method: post
+    content:
+      {
+        "totalCount": "1",
+        "imdata": [
+          {
+            "fabricHIfPol": {
+              "attributes": {
+                "autoNeg":"on",
+                "descr":"",
+                "dn":"uni/infra/hintfpol-10Gb",
+                "fecMode":"inherit",
+                "linkDebounce":"100",
+                "name":"10Gb",
+                "nameAlias":"",
+                "ownerKey":"",
+                "ownerTag":"",
+                "speed":"10G"
+              }
+            }
+          }
+        ]
+      }
+  - id: 1
+    name: REST-POST LLDP-Enabled Policy
+    method: post
+    content:
+      {
+        "totalCount": "1",
+        "imdata": [
+          {
+            "lldpIfPol": {
+              "attributes": {
+                "adminRxSt":"enabled",
+                "adminTxSt":"enabled",
+                "descr":"",
+                "dn":"uni/infra/lldpIfP-LLDP-Enabled",
+                "name":"LLDP-Enabled",
+                "nameAlias":"",
+                "ownerKey":"",
+                "ownerTag":""
+              }
+            }
+          }
+        ]
+      }
+  - id: 2
+    name: REST-POST LACP-Active Policy
+    method: post
+    content:
+      {
+        "totalCount":"1",
+        "imdata": [
+          {
+            "lacpLagPol": {
+              "attributes": {
+                "ctrl":"fast-sel-hot-stdby,graceful-conv,susp-individual",
+                "descr":"",
+                "dn":"uni/infra/lacplagp-LACP-Active",
+                "maxLinks":"16",
+                "minLinks":"1",
+                "mode":"active",
+                "name":"LACP-Active",
+                "nameAlias":"",
+                "ownerKey":"",
+                "ownerTag":""
+              }
+            }
+          }
+        ]
+      }

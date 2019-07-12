@@ -1,5 +1,96 @@
-#Integrate a bare metal server into aci
-#configure vpc with lacp-active
-#10G
-#configured on leaf 2101 and 2102
-#configured on ports 20 and 21
+---
+- name: Scenario 2
+  hosts: cloud_apic
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Import info from yml file
+      include_vars:
+        file: scenario-2-info.yml
+        name: this
+
+    - name: Create Interface Profiles
+      aci_interface_policy_leaf_profile:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        leaf_interface_profile: "{{ item.int_prof }}"
+      with_items: "{{ this.IDs }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Create Switch Profiles
+      aci_switch_policy_leaf_profile:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        leaf_profile: "{{ item.leaf_prof }}"
+      with_items: "{{ this.IDs }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Create Leaf Selector
+      aci_switch_leaf_selector:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        leaf_profile: "{{ item.leaf_prof }}"
+        leaf: "{{ item.leaf }}"
+        leaf_node_blk: "{{ item.sel_block_name }}"
+        from: "{{ item.sel_from }}"
+        to: "{{ item.sel_to }}"
+      with_items: "{{ this.IDs }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Associate interface and switch
+      aci_interface_selector_to_switch_policy_leaf_profile:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        leaf_profile: "{{ item.leaf_prof }}"
+        interface_selector: "{{ item.leaf_sel }}"
+      with_items: "{{ this.IDs }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Run REST calls to require policies
+      aci_rest:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        path: api/mo/uni.json
+        method: "{{ item.method }}"
+        content: "{{ item.content }}"
+      with_items: "{{ this.REST_CALLS }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Port Config
+      aci_access_port_to_interface_policy_leaf_profile:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        interface_type: vpc
+        leaf_interface_profile: "{{ item.0.int_prof }}"
+        leaf_port_blk: "{{ item.0.int_prof }}"
+        access_port_selector: "{{ item.1.access_port_sel }}"
+        from_port: "{{ item.1.from }}"
+        to_port: "{{ item.1.to }}"
+      with_subelements:
+      - "{{ this.IDs }}"
+      - access_port_sels
+      register: print_output
+    - debug: var=print_output

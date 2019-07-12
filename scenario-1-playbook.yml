@@ -4,22 +4,22 @@
   connection: local
   gather_facts: no
 
-#vlan pool with vlans 50-100
-#create a phys domain
-#associate domain to pool
-#create an AEP
-#associate AEP to phys domain
-
   tasks:
+    - name: Import info from yml file
+      include_vars:
+        file: scenario-1-info.yml
+        name: this
+
     - name: Create VLAN Pool 
       aci_vlan_pool:
         host: "{{ inventory_hostname }}"
         username: "{{ username }}"
         password: "{{ password }}"
         validate_certs: no # yes
-        pool: my_pool
-        pool_allocation_mode: static
+        pool: "{{ item.vlan_pool }}"
+        pool_allocation_mode: "{{ item.vlan_pool_allocation_mode }}"
         state: present
+      with_items: "{{ this.VLANs }}"
       register: print_output
     - debug: var=print_output
 
@@ -29,14 +29,15 @@
         username: "{{ username }}"
         password: "{{ password }}"
         validate_certs: no # yes
-        pool: my_pool
-        pool_type: vlan
-        pool_allocation_mode: static
-        range_name: my_pool
-        range_start: 50
-        range_end: 100
-        allocation_mode: inherit
+        pool: "{{ item.vlan_pool }}"
+        pool_type: "{{ item.vlan_pool_type }}"
+        pool_allocation_mode: "{{ item.vlan_pool_allocation_mode }}"
+        range_name: "{{ item.vlan_pool }}"
+        range_start: "{{ item.vlan_pool_range_start }}"
+        range_end: "{{ item.vlan_pool_range_end }}"
+        allocation_mode: "{{ item.vlan_allocation_mode }}"
         state: present
+      with_items: "{{ this.VLANs }}"
       register: print_output
     - debug: var=print_output
 
@@ -46,9 +47,10 @@
         username: "{{ username }}"
         password: "{{ password }}"
         validate_certs: no # yes
-        domain: my_domphys
-        domain_type: phys
+        domain: "{{ item.domain }}"
+        domain_type: "{{ item.domain_type }}"
         state: present
+      with_items: "{{ this.Domains }}"
       register: print_output
     - debug: var=print_output
 
@@ -58,11 +60,14 @@
         username: "{{ username }}"
         password: "{{ password }}"
         validate_certs: no # yes
-        domain: my_domphys
-        domain_type: phys
-        pool: my_pool
-        pool_allocation_mode: static
+        domain: "{{ item.0.domain }}"
+        domain_type: "{{ item.0.domain_type }}"
+        pool: "{{ item.1.vlan_pool }}"
+        pool_allocation_mode: "{{ item.1.vlan_pool_allocation_mode }}"
         state: present
+      with_nested:
+      - "{{ this.Domains }}"
+      - "{{ this.VLANs }}"
       register: print_output
     - debug: var=print_output
 
@@ -72,9 +77,10 @@
         username: "{{ username }}"
         password: "{{ password }}"
         validate_certs: no # yes
-        aep: my_aep
-        description: default
+        aep: "{{ item.aep }}"
+        description: "{{ item.aep_desc }}"
         state: present
+      with_items: "{{ this.AEPs }}"
       register: print_output
     - debug: var=print_output
 
@@ -84,9 +90,12 @@
         username: "{{ username }}"
         password: "{{ password }}"
         validate_certs: no # yes
-        aep: my_aep
-        domain: my_domphys
-        domain_type: phys
+        aep: "{{ item.0.aep }}"
+        domain: "{{ item.1.domain }}"
+        domain_type: "{{ item.1.domain_type }}"
         state: present
+      with_nested:
+      - "{{ this.AEPs }}"
+      - "{{ this.Domains }}"
       register: print_output
     - debug: var=print_output

@@ -1,0 +1,84 @@
+---
+- name: Scenario 3
+  hosts: cloud_apic
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Pull info from yml file
+      include_vars:
+        file: scenario-3-info.yml
+        name: this
+
+    - name: Add tenant
+      aci_tenant:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        tenant: "{{ item.tenant }}"
+        description: "{{ item.tn_desc }}"
+      with_items: "{{ this.tenants }}"
+      register: print_output
+    - debug: var=print_output
+    
+    - name: Create a VRF with_items
+      aci_vrf:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        vrf: "{{ item.vrf }}"
+        tenant: "{{ item.tenant }}"
+        description: "{{ item.vrf_desc }}"
+      with_items: "{{ this.tenants }}"
+      register: print_output
+    - debug: var=print_output
+    
+    - name: Create Application Profile with_items
+      aci_ap:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        ap: "{{ item.ap }}"
+        tenant: "{{ item.tenant }}"
+        description: "{{ item.ap_desc }}"
+      with_items: "{{ this.tenants }}"
+      register: print_output
+    - debug: var=print_output
+
+    - name: Create Bridge Domain with_items
+      aci_bd:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        bd: "{{ item.bd }}"
+        vrf: "{{ item.vrf }}"
+        tenant: "{{ item.tenant }}"
+      with_items: "{{ this.tenants }}"
+      register: print_output
+    - debug: var=print_output
+    
+    - name: Create EPGs with_items
+      aci_epg:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        tenant: "{{ item.0.tenant }}"
+        ap: "{{ item.0.ap }}"
+        bd: "{{ item.0.bd }}"
+        epg: "{{ item.1.epg }}"
+        description: "{{ item.1.epg_desc }}"
+      with_subelements: 
+        - "{{ this.tenants }}"
+        - epgs
+      register: print_output
+    - debug: var=print_output
