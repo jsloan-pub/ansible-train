@@ -200,7 +200,9 @@ ansible and aci
 
 ## Example
 
-ansible-playbook -i inventory.ini -v scenario-1-playbook.yml
+- ansible-playbook -i ../inventory.ini -v scenario-1-playbook.yml
+- ansible-playbook -i ../inventory.ini -v scenario-2-playbook.yml
+- ansible-playbook -i ../inventory.ini -v scenario-3-playbook.yml
 
 ## Author Info
 
