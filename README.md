@@ -9,15 +9,27 @@ cloud apic
 ## Variables
 
 scenario-1-info.yml
-VLANs:
-  - id: #
-    vlan_allocation_mode:
-    vlan_pool:
-    vlan_pool_allocation_mode:
-    vlan_pool_type:
-    vlan_pool_range_start:
-    vlan_pool_range_end:
-    
+
+``` yml
+  VLANs:
+    - id: 0
+      vlan_pool: my_vlan
+      vlan_pool_allocation_mode: static
+      vlan_pool_type: vlan
+      vlan_pool_range_start: 50
+      vlan_pool_range_end: 100
+      vlan_allocation_mode: inherit
+
+  Domains:
+    - id: 0
+      domain: my_domphys
+      domain_type: phys
+
+  AEPs:
+    - id: 0
+      aep: my_aep
+      aep_desc: "Pretty standard AEP"
+```
 
 ## Dependencies
 
