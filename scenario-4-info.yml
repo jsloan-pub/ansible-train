@@ -21,7 +21,7 @@ Contracts:
     scope: application-profile 
     subjects:
       - contract_subject: app_to_db_subject
-        contract_subject_desc: subject 0's description
+        contract_subject_desc: description of app to db subject
         # consumer_match: all
         # provider_match: all
     bindings:

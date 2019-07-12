@@ -46,7 +46,7 @@
         ether_type: "{{ item.1.ether_type }}"
         ip_protocol: "{{ item.1.ip_protocol }}"
       with_subelements:
-        - "{{this.Filters}"}
+        - "{{this.Filters}}"
         - entries
 
     - name: Contracts
@@ -57,8 +57,8 @@
         validate_certs: no # yes
         state: present
         tenant: "{{ item.tenant }}"
-        contract_name: "{{ item.contract_name }}"
-        contract_desc: "{{ item.contract_desc }}"
+        name: "{{ item.contract_name }}"
+        description: "{{ item.contract_desc }}"
         scope: "{{ item.scope }}"
       with_items: "{{ this.Contracts }}"
 
@@ -73,8 +73,8 @@
         contract: "{{ item.0.contract_name }}"
         subject: "{{ item.1.contract_subject }}"
         description: "{{ item.1.contract_subject_desc }}"
-        consumer_match: "{{ item.1.consumer_match }}"
-        provider_match: "{{ item.1.provider_match }}"
+        # consumer_match: "{{ item.1.consumer_match }}"
+        # provider_match: "{{ item.1.provider_match }}"
       with_subelements:
         - "{{ this.Contracts }}"
         - subjects
@@ -92,5 +92,5 @@
         contract_type: "{{ item.1.contract_type }}"
         epg: "{{ item.1.epg}}"
       with_subelements: 
-        - "{{ this.Bindings }}"
+        - "{{ this.Contracts }}"
         - bindings
