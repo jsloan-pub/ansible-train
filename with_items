@@ -1,0 +1,92 @@
+  # tasks:
+  #   - name: Add tenant with_items
+  #     aci_tenant:
+  #       host: "{{ inventory_hostname }}"
+  #       username: "{{ username }}"
+  #       password: "{{ password }}"
+  #       validate_certs: no # yes
+  #       state: present
+  #       tenant: "{{ item.tenant }}"
+  #       description: "{{ item.desc }}"
+  #     with_items:
+  #     - { tenant: "Dev_tn", desc: "This is the Development Tenant" }
+  #     - { tenant: "QA_tn", desc: "This is the QA Tenant" }
+  #     - { tenant: "Prod_tn", desc: "This is the Production Tenant" }
+  #     register: print_output
+  #   - debug: var=print_output
+    
+  #   - name: Create a VRF with_items
+  #     aci_vrf:
+  #       host: "{{ inventory_hostname }}"
+  #       username: "{{ username }}"
+  #       password: "{{ password }}"
+  #       validate_certs: no # yes
+  #       state: present
+  #       vrf: "{{ item.vrf }}"
+  #       tenant: "{{ item.tenant }}"
+  #       description: "{{ item.desc }}"
+  #     with_items:
+  #     - { vrf: "Dev_vrf", tenant: "Dev_tn", desc: "This is the Development VRF" }
+  #     - { vrf: "QA_vrf", tenant: "QA_tn", desc: "This is the QA VRF" }
+  #     - { vrf: "Prod_vrf", tenant: "Prod_tn", desc: "This is the Production VRF" }
+  #     register: print_output
+  #   - debug: var=print_output
+    
+  #   - name: Create Application Profile with_items
+  #     aci_ap:
+  #       host: "{{ inventory_hostname }}"
+  #       username: "{{ username }}"
+  #       password: "{{ password }}"
+  #       validate_certs: no # yes
+  #       state: present
+  #       ap: "{{ item.ap }}"
+  #       tenant: "{{ item.tenant }}"
+  #       description: "{{ item.desc }}"
+  #     with_items:
+  #     - { ap: "Dev_app", tenant: "Dev_tn", desc: "This is the Development App Profile" }
+  #     - { ap: "QA_app", tenant: "QA_tn", desc: "This is the QA App Profile" }
+  #     - { ap: "Prod_app", tenant: "Prod_tn", desc: "This is the Production App Profile" }
+  #     register: print_output
+  #   - debug: var=print_output
+
+  #   - name: Create Bridge Domain with_items
+  #     aci_bd:
+  #       host: "{{ inventory_hostname }}"
+  #       username: "{{ username }}"
+  #       password: "{{ password }}"
+  #       validate_certs: no # yes
+  #       state: present
+  #       bd: "{{ item.bd }}"
+  #       vrf: "{{ item.vrf }}"
+  #       tenant: "{{ item.tenant }}"
+  #     with_items:
+  #     - { bd: "Dev_bd", vrf: "Dev_vrf", tenant: "Dev_tn", desc: "This is the Development Bridge Domain" }
+  #     - { bd: "QA_bd", vrf: "QA_vrf", tenant: "QA_tn", desc: "This is the QA Bridge Domain" }
+  #     - { bd: "Prod_bd", vrf: "Prod_vrf", tenant: "Prod_tn", desc: "This is the Production Bridge Domain" }
+  #     register: print_output
+  #   - debug: var=print_output
+    
+  #   - name: Create EPGs with_items
+  #     aci_epg:
+  #       host: "{{ inventory_hostname }}"
+  #       username: "{{ username }}"
+  #       password: "{{ password }}"
+  #       validate_certs: no # yes
+  #       state: present
+  #       tenant: "{{ item.tenant }}"
+  #       ap: "{{ item.ap }}"
+  #       epg: "{{ item.epg }}"
+  #       bd: "{{ item.bd }}"
+  #       description: "{{ item.desc }}"
+  #     with_items:
+  #     - { tenant: "Dev_tn", ap: "Dev_app", epg: "Dev_web_epg", bd: "Dev_bd", desc: "This is the Development EPG - Web" }
+  #     - { tenant: "Dev_tn", ap: "Dev_app", epg: "Dev_app_epg", bd: "Dev_bd", desc: "This is the Development EPG - App" }
+  #     - { tenant: "Dev_tn", ap: "Dev_app", epg: "Dev_db_epg", bd: "Dev_bd", desc: "This is the Development EPG - DB" }
+  #     - { tenant: "QA_tn", ap: "QA_app", epg: "QA_web_epg", bd: "QA_bd", desc: "This is the QA EPG - Web" }
+  #     - { tenant: "QA_tn", ap: "QA_app", epg: "QA_app_epg", bd: "QA_bd", desc: "This is the QA EPG - App" }
+  #     - { tenant: "QA_tn", ap: "QA_app", epg: "QA_db_epg", bd: "QA_bd", desc: "This is the QA EPG - DB" }
+  #     - { tenant: "Prod_tn", ap: "Prod_app", epg: "Prod_web_epg", bd: "Prod_bd", desc: "This is the Prod EPG - Web" }
+  #     - { tenant: "Prod_tn", ap: "Prod_app", epg: "Prod_app_epg", bd: "Prod_bd", desc: "This is the Prod EPG - App" }
+  #     - { tenant: "Prod_tn", ap: "Prod_app", epg: "Prod_db_epg", bd: "Prod_bd", desc: "This is the Prod EPG - DB" }
+  #     register: print_output
+  #   - debug: var=print_output
