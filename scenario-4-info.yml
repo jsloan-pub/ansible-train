@@ -1,0 +1,39 @@
+Filters:
+  - id: 0
+    tenant: Dev_tn
+    filter_name: 1433-TCP_filter
+    filter_desc: This filter allows the source to communicate over 1433-TCP to
+    entries:
+      - id: 0
+        entry_name: 1433-TCP_filter_entry
+        entry_desc: This entry sets the port and protocol to 1433-TCP
+        dst_port: 1433
+        #dst_port_end:
+        #dst_port_start:
+        ether_type: ip
+        ip_protocol: tcp
+
+Contracts:
+  - id: 0
+    tenant: Dev_tn
+    contract_name: 1433-TCP_app_to_db
+    contract_desc: Communication between app and database server
+    scope: application-profile 
+    subjects:
+      - contract_subject: app_to_db_subject
+        contract_subject_desc: subject 0's description
+        # consumer_match: all
+        # provider_match: all
+    bindings:
+      - id: 0
+        app_profile: Dev_ap
+        contract: 1433-TCP_app_to_db
+        contract_type: provider
+        epg: Dev_db_epg
+      - id: 1
+        app_profile: Dev_ap
+        contract: 1433-TCP_app_to_db
+        contract_type: consumer
+        epg: Dev_app_epg
+
+

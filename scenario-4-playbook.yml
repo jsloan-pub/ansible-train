@@ -1,0 +1,96 @@
+---
+- name: scenario 4
+  hosts: cloud_apic
+  connection: local
+  gather_facts: no
+
+  # Create filters to connect to SQL DB port, port 8080-TCP, and 443
+  # Create contracts to connect:
+  # app to db
+  # ext to web
+  # web to app
+  # associate bindings
+
+  tasks:
+    - name: Pull info from yml file
+      include_vars:
+        file: scenario-4-info.yml
+        name: this
+  
+    - name: Filters
+      aci_filter:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        tenant: "{{ item.tenant }}"
+        filter: "{{ item.filter_name }}"
+        description: "{{ item.filter_desc }}"
+      with_items: "{{ this.Filters }}"
+
+    - name: Filter Entries
+      aci_filter_entry:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        filter: "{{ item.0.filter_name }}"
+        tenant: "{{ item.0.tenant }}"
+        description: "{{ item.1.entry_desc }}"
+        dst_port: "{{ item.1.dst_port }}"
+        # dst_port_end: "{{ item.1.dst_port_end }}"
+        # dst_port_start: "{{ item.1.dst_port_start }}"
+        entry: "{{ item.1.entry_name }}"
+        ether_type: "{{ item.1.ether_type }}"
+        ip_protocol: "{{ item.1.ip_protocol }}"
+      with_subelements:
+        - "{{this.Filters}"}
+        - entries
+
+    - name: Contracts
+      aci_contract:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        tenant: "{{ item.tenant }}"
+        contract_name: "{{ item.contract_name }}"
+        contract_desc: "{{ item.contract_desc }}"
+        scope: "{{ item.scope }}"
+      with_items: "{{ this.Contracts }}"
+
+    - name: Contract Subjects
+      aci_contract_subject:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        tenant: "{{ item.0.tenant }}"
+        contract: "{{ item.0.contract_name }}"
+        subject: "{{ item.1.contract_subject }}"
+        description: "{{ item.1.contract_subject_desc }}"
+        consumer_match: "{{ item.1.consumer_match }}"
+        provider_match: "{{ item.1.provider_match }}"
+      with_subelements:
+        - "{{ this.Contracts }}"
+        - subjects
+
+    - name: EPG to Contracts
+      aci_epg_to_contract:
+        host: "{{ inventory_hostname }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        validate_certs: no # yes
+        state: present
+        tenant: "{{ item.0.tenant }}"
+        ap: "{{ item.1.app_profile }}"
+        contract: "{{ item.1.contract }}"
+        contract_type: "{{ item.1.contract_type }}"
+        epg: "{{ item.1.epg}}"
+      with_subelements: 
+        - "{{ this.Bindings }}"
+        - bindings
