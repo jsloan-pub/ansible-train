@@ -1,10 +1,10 @@
 # README.md ansible-train
 
-Three scenarios with separate variables, stored in objects to allow looping.
+4 scenarios and a concatenated master version, with variables stored in separate config files. The dictionaries from the corresponding -info.yml allow looping through necessary configs.
 
 ## Requirements
 
-cloud apic
+apic
 
 ## Variables
 
@@ -203,6 +203,8 @@ ansible and aci
 - ansible-playbook -i ../inventory.ini -v scenario-1-playbook.yml
 - ansible-playbook -i ../inventory.ini -v scenario-2-playbook.yml
 - ansible-playbook -i ../inventory.ini -v scenario-3-playbook.yml
+- ansible-playbook -i ../inventory.ini -v scenario-4-playbook.yml
+- ansible-playbook -i ../inventory.ini -v master-playbook.yml
 
 ## Author Info
 
